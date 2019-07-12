@@ -7,7 +7,7 @@ output: html_notebook
 
 ## First Glance
 
-R has basic functions to calculate numerical aspects of data. Perhaps the very first thing to look at your data is with summary() and plot(). You wouldn't expect to have a very decent view of data, but a very general one.
+R has basic functions to calculate numerical aspects of data. Perhaps the very first thing to look at your data is with summary() and plot(). You wouldn't expect to have a decent view of data, but a very general one.
 
 
 ```{r sum1}
@@ -89,7 +89,7 @@ Let's access the help file, and it says,
 
 "Like var this uses denominator n-1"
 
-Klar?
+
 
 This is an unbiased estimator of sd, with,
 
@@ -99,8 +99,105 @@ Let's modify our expression a little bit:
 
 
 ```{r}
-sqrt(sum(iris_Petal.Length^2)/(length(iris_Petal.Length)-1)-(sum(iris_Petal.Length)^2/((length(iris_Petal.Length)-1)*length(iris_Petal.Length))))
+sqrt(sum(iris_Petal.Length^2)/(length(iris_Petal.Length)-1)-(sum(iris_Petal.Length)^2/((length(iris_Petal.Length)-1)*length(iris_Petal.Length))))# actually, don't do this, use sd()
 ```
+
+
+# Aggregating/ Facetting/ summarizing?
+
+Recall that we can make histogram with
+
+```{r histogram}
+hist(iris_Petal.Length)
+```
+
+At the first glance it has 2 peaks. Recall that we can facet the distribution with ggplot.
+
+```{r}
+ggplot(data=iris,aes(x=Petal.Length,fill = Species)) + 
+  geom_density(alpha=.5)
+```
+
+## A base solution : aggregate
+
+
+```{r aggregate}
+
+attach(iris)
+aggregate(Sepal.Length, by = list(Species=Species),
+          FUN = sd)
+aggregate(Sepal.Length,by =list(Species = Species),
+          FUN = pastecs::stat.desc)
+```
+
+For the same reason you can apply customized functions
+
+```{r skewness}
+Skewness =function(x){
+  m = mean(x)
+  n = length(x)
+  s = sd(x)
+  sum((x-m)^3/s^3)/n
+}
+aggregate(Sepal.Length,by =list(Species = Species),
+          FUN =Skewness  )
+```
+
+Since positive, all 3 species are with right skewed distribution of Sepal.Length.
+
+## An agreed way of summarizing?
+
+Problem is, everyone wants to rule the world. By “the world”, I mean their "Imagine Estacy", therefore, a number of different summarizing toolbox has been defined with different packages.
+
+
+Worse, they don't always work with aggregate(), nor with summarize in tidyverse.
+
+Doing such is easy.
+```{r}
+Hmisc::describe(iris[,1])
+psych::describe(iris[,1])
+pastecs::stat.desc(iris[,1],basic = T,
+                   desc = F,
+                   norm = F)
+pastecs::stat.desc(iris[,1],basic =F,
+                   desc = T,
+                   norm = F)
+pastecs::stat.desc(iris[,1],basic =F,
+                   desc = F,
+                   norm = T)
+```
+
+but to do aggregation for multiple outputs, you will inevitably end up using other wrappers to save time, (and sometimes by() breaks!)
+
+True, you can write some customized functions.
+
+```{r}
+ply_by = function(x,.f,param = 1,groups = ncol(x),as.list = FALSE,...){
+  Levels = levels(x[,groups])
+  re=list()
+  l =length(Levels)
+  for(i in 1:l){
+    print(Levels[i])
+    print(.f(x[x[,groups]==Levels[i],param],...))
+  }
+  #re
+}
+
+ply_by(iris,.f = summary)
+ply_by(iris,.f = Hmisc::describe)
+ply_by(iris,.f = psych::describe)
+ply_by(iris,pastecs::stat.desc,basic =F,
+                   desc = F,
+                   norm = T)
+```
+
+It is working, but is bumpy,because R package developments are very decentralized and lots of the algorithms has been written for some time with the old conventions.
+
+Sometimes it becomes hard to work with these old conventioned packages -they don't even work in a reproducible way. If this happens, maybe go to their source for help- you know how to build things with packages? alright, I know how packages are built lol.
+
+
+## Operators, functors and Data pipelines?
+to be done
 
 
 
