@@ -18,12 +18,12 @@ There is no one way to 'correctly' help us understand data. Understand different
 
 The different perspectives may include:
 ## 0 Before you start
- - Prerequisites
- - Accessing Data Background Info(a fast way)
+ - Prerequisites [https://github.com/HaoLi111/All-stats-and-DS-on-iris/blob/master/Prerequisites.Rmd]
+ - Accessing Data Background Info(a fast way) [https://github.com/HaoLi111/All-stats-and-DS-on-iris/blob/master/Accessing%20Data%20Background%20Info.Rmd]
 ## 1 Basic statistics
- - Exploratory Visualization
- - Summary Statistics
- - Use CARET for an extremely automated glance
+ - Exploratory Visualization [https://github.com/HaoLi111/All-stats-and-DS-on-iris/blob/master/Exploratory_Visualization.Rmd]
+ - Summary Statistics [https://github.com/HaoLi111/All-stats-and-DS-on-iris/blob/master/Summary%20Statistics.Rmd]
+ - Predictive models with caret-Use CARET for an extremely automated glance [https://github.com/HaoLi111/All-stats-and-DS-on-iris/blob/master/Predictive%20models%20with%20caret.Rmd]
  - Confidential Range
  - Multidimensional Statistics
 ## 2 Data Science techniques
