@@ -1,0 +1,58 @@
+---
+title: "Data Structure"
+output: html_notebook
+---
+
+
+## dimension of data
+
+```{r dims}
+dim(iris)
+```
+
+32 row, 11 columns
+
+ In a tidied data frame
+  - each row represents an observation
+  - each col a variable
+
+```{r}
+colnames(iris)
+```
+
+ Print very first rows of the observation
+ (including values and names)
+
+```{r}
+print(head(iris))
+# similarly , tail
+print(tail(iris))
+```
+
+ You can print explicity with print() function,
+ or just leave the variable in the command line
+ or wrap the entire command in () to execute
+ as the same time, print
+```{r}
+#e.g. head(iris)
+ #e.g.2 (h = head(iris))
+```
+ The str() function shows the structure of data
+ including values and types.
+
+```{r}
+str(iris)
+```
+from which we know all variables are of numeric
+type, but not necessarily a continuous var
+
+Is there any missing values?
+
+```{r}
+anyNA(iris)
+```
+
+Fortunately no.
+
+
+

@@ -1,0 +1,15 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Preview 
+
+```{r,message=F}
+library(ggplot2)
+library(GGally)
+ggpairs(iris)
+ggparcoord(iris)
+```
+
+

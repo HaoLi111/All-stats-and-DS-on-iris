@@ -1,0 +1,144 @@
+---
+title: "Predictive models with caret"
+author: "Hao Li"
+date: "20190620"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## CARET package
+
+```
+#install.packages("caret")
+```
+
+##
+
+```{r}
+library(caret)
+
+```
+
+
+```{r}
+model1 =train(Species ~ ., data = iris)
+model2 =train(Sepal.Length~.,data=iris)
+```
+
+```{r}
+
+pred1 = predict(model1)
+plot(model1)
+#visreg::visreg(pred1)
+caret::confusionMatrix(iris$Species,pred1)
+#install.packages('broom')
+str(model1)
+
+```
+
+
+
+```{r}
+pred2 = predict(model2)
+visreg::visreg(model2)
+```
+
+```{r}
+modelLookup('C5.0')
+#modelLookup('tree')
+modelLookup('rf')
+modelLookup('nnet')
+#getModelInfo('nnet')
+#modelLookup()
+```
+
+
+tune a C5.0 tree
+
+```{r trainControl}
+ctrl = trainControl(method ='cv',number = 20,selectionFunction = 'oneSE')
+
+#getModelInfo('C5.0')
+ctrlgrid = as.data.frame(expand.grid(trials =seq(from=1,to=26,by=5),model ='tree',winnow=FALSE))
+colnames(ctrlgrid)
+
+ctrl_model =train(Species~.,data=iris,method = "C5.0",.metric = "Kappa",
+                  trControl =ctrl,
+                  tuneGrid = ctrlgrid)
+
+ctrl_model
+
+```
+
+
+tune a NN
+
+```{r}
+modelLookup('nnet')
+modelLookup('nnet')[1,3]
+```
+
+```{r}
+Ctrl2 = trainControl()
+nnet_iris_tune = train(Species~.,data=iris,method = 'nnet',
+                       trControl = trainControl(method = 'cv'),
+                       tuneGrid = expand.grid(size = 1:4,
+                                              decay = 0),
+                       metric = 'Kappa')
+nnet_iris_tune
+
+#str(nnet_iris_tune)
+plot(nnet_iris_tune)
+Perf= as.matrix(nnet_iris_tune$results)
+```
+
+
+#bagging
+
+```{r}
+
+library(caret)
+library(ipred)
+ctrl = trainControl(method ='cv',number = 10)
+train(Species~.,data =iris,method = 'treebag',
+      trControl = ctrl)
+
+```
+
+
+```{r baggedSVM}
+str(svmBag)
+ctrl = bagControl(fit = svmBag$fit,predict = svmbag$pred,aggregate = svmBag$aggregate)
+
+
+iris_1=within(iris,{
+  is_setosa = ifelse(iris$Species=='setosa',1,0)})
+iris_1$Species=NULL
+svmbag = train(is_setosa~.,data = iris_1,method = "bag",
+               bagControl = ctrl)
+
+
+```
+
+
+#boosting
+
+##adaboost
+
+```{r}
+library(adabag)
+library(doParallel)
+registerDoParallel(6)
+getDoParWorkers()
+
+
+#system.time({
+ # adaboost_iris = train(Species~.,data = iris,method = 'AdaBoost.M1')
+#})
+
+plot(adaboost_iris)
+
+```

@@ -1,0 +1,37 @@
+---
+title: "Prerequisites"
+output:
+  html_document:
+    df_print: paged
+---
+
+# Before you start
+
+You don't have to go through all contents of this repo unless you really want to compare different idealism(s) related to data. Cookbook users are welcomed.
+
+The most probable reason why R did not include lots of brilliant packages into its base is that, there is no one right way to do data science.
+
+It is not sure what this repo is aimed. It seems to be a repo that is most programmable in the  statistical resources, and most statistical among the programmers repo. The task is to understand the data, but it is also true that elegant coding is encouraged. 
+
+# Hardware
+
+A computer with no less than 2 cores and 8GB memory is expected to run all commands in this repo (though most would work on other computers).
+
+This is built with:
+
+
+```{r}
+parallel::detectCores()
+memory.limit()
+```
+
+
+# Software
+
+Installation of R (>3.5.0) is expected. You maybe asked to install some optional libraries(R packages). 
+
+This rmd is built with:
+
+```{r,message=FALSE}
+sessionInfo()
+```

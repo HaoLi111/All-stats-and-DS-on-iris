@@ -1,0 +1,136 @@
+---
+title: "Accessing Data Background Info"
+output:
+  word_document: default
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+# Documentation
+
+Before you start analyzing any datasets, it is helpful to get access to some pre-written information.
+
+Datasets provided by R typically have a very detailed help file.
+
+```
+?iris#help(iris)
+```
+
+# Background Research
+
+Search with you explorer about the iris data. You may use Wikipedia, Carrot2 or other platforms, but this might help you:
+
+## Search across multiple pages
+
+### browseURL
+
+browseURL() function let you open websites with a default explorer.
+For example:
+
+```
+browseURL("http://www.r-project.org")
+```
+
+### write your own search function
+
+Suppose you want to search with Bing in global mode(in CHN), let us search "Edgar Anderson".
+
+In the text box, type in the key word and you get the following link to.
+
+```
+https://cn.bing.com/search?q=Edgar%20Anderson
+
+```
+
+You may get a link longer than this but most would be unecessary.
+Now the URL should start with
+```
+https://cn.bing.com/search?q= + Your Kwd
+```
+
+Note that Your keyword maybe preprocessed, in this case a blank space is replaced by "%20".
+
+We can redo this by gsub()
+
+```{r}
+kwd = "Edgar Anderson"
+gsub(pattern=" ", "%20", kwd, ignore.case = FALSE, perl = FALSE,
+     fixed = T, useBytes = FALSE)
+```
+
+Now, define a function that turn a kwd into a html that call a Bing search. And run it.
+
+```{r}
+searchR_BingCnGlob = function(x) paste0("https://cn.bing.com/search?q=",gsub(pattern=" ", "%20", x, ignore.case = FALSE, perl = FALSE,
+     fixed = T, useBytes = FALSE))
+
+searchR_BingCnGlob("iris dataset")
+```
+
+Now call browseURL() to open the page.
+
+```
+browseURL(searchR_BingCnGlob("iris dataset"))
+```
+
+### A cleverer way
+
+This is still tedious, right?
+
+Let's do Wikipedia and Carrot2+PubMed, and then wrap it further.
+
+```
+http://search.carrot2.org/stable/search?query=iris+dataset&results=100&source=pubmed&algorithm=lingo&view=foamtree&skin=fancy-compact
+```
+
+```{r}
+searchR_C2PubMed=function(x) paste0("http://search.carrot2.org/stable/search?query=",gsub(" ","+",x,fixed=T),"&results=100&source=pubmed&algorithm=lingo&view=foamtree&skin=fancy-compact")
+```
+
+```{r}
+searchR_Wiki = function(x) paste0("https://en.wikipedia.org/w/index.php?search=",gsub(" ","+",x,fixed=T),"&title=Special%3ASearch&go=Go&ns0=1")
+```
+
+Then wrap it further.
+
+```{r}
+
+searchR = function(x, engines = c("C2PubMed","Wiki","BingCnGlob"),
+                   Operation = browseURL){
+  SearchList=list()
+  for(i in seq_along(engines)){
+    SearchList[[i]] = get(paste("searchR",engines[i],sep="_"))(x)
+  }
+  lapply(SearchList, Operation)
+}
+```
+
+And run this.
+
+```
+searchR("iris dataset")
+```
+
+And Boom! You have all things opened.
+
+## Search multiple objects
+
+We can rewrite the searchR function tolet it take multiple arguments, but this can be done with sapply().
+
+```
+sapply(c("iris data",
+         "Edgar Anderson",
+         "multivariable dataset"),searchR)
+```
+
+## Search what the variables are
+
+```
+sapply(colnames(iris),searchR)
+```
+
+I know this is crazy. Have a good time reading
+
+![Multiple Panels called from 1 mission](searchR.png)
+

@@ -1,0 +1,106 @@
+---
+title: "Summary Statistics"
+output: html_notebook
+---
+
+# Summary statistics
+
+## First Glance
+
+R has basic functions to calculate numerical aspects of data. Perhaps the very first thing to look at your data is with summary() and plot(). You wouldn't expect to have a very decent view of data, but a very general one.
+
+
+```{r sum1}
+summary(iris)
+plot(iris)
+```
+
+With summary(), you can access the min, max median, and other aspects of data. With plot(), you can have a general view of your data. 
+
+But keep in mind that the trend shown at the first glance can be misleading - both numerically and visually. There are lots of cases when things become counter-intuitive.
+
+## A better summary
+
+To crunch the iris dataset, simply printing one-line commands isn't enough. It is suggested that R is a programming language, or more specifically, a scripting language. Programmability means flexibility.
+
+### Structure of Data
+
+
+
+```{r classTypeof}
+class(iris)
+typeof(iris)
+```
+
+The 'Class' of the iris is "data.frame" and "type" is list. With most S3 methods the data can only be handled with the methods for "data.frame". 
+
+```{r classTypeof2}
+str(iris)
+```
+
+## Subsetting
+
+For example, if I am only interested in the variable "Petal.Length"
+
+```{r}
+(iris_Petal.Length = iris[,"Petal.Length"])
+```
+
+This is printed as a numeric vector. If I still want a data.frame (with 1 list). Do this(for convenience only printing the first 6 rows of it),
+
+```{r irisDropF}
+iris_Petal.Length_notDrop =iris[,"Petal.Length",drop=F]
+head(iris_Petal.Length)
+```
+
+
+
+## Calculate Summary Statistics Aspects
+
+You can run summary() on a single numeric vector the same way you do it on dataframes. 
+Also it is possible to get the index of the max and min values.
+Note that which.max() and which.min() only support 1D vector, so use drop=T.
+For Example,
+
+```{r irisMin}
+summary(iris_Petal.Length)
+mean(iris_Petal.Length)
+max(iris_Petal.Length);min(iris_Petal.Length)
+which.max(iris_Petal.Length);which.min(iris_Petal.Length)
+quantile(iris_Petal.Length,.25)
+quantile(iris_Petal.Length,.75)
+```
+
+Also the numeric functions are availiable. We can calculate sd(Standard Derivation by taking the square root of the derivation).
+
+$$sd = \sqrt{\frac{\Sigma{x^2}}{n}-(\frac{{\Sigma{x}}}{n})^2}$$
+
+```{r}
+length(iris_Petal.Length)
+var(iris_Petal.Length)
+sd(iris_Petal.Length)
+
+sqrt(sum(iris_Petal.Length^2)/length(iris_Petal.Length) - (sum(iris_Petal.Length/length(iris_Petal.Length)))^2)
+```
+
+As you can see the sd that is returned from the function sd()  differs from that calculated from the equation, why?
+
+Let's access the help file, and it says,
+
+"Like var this uses denominator n-1"
+
+Klar?
+
+This is an unbiased estimator of sd, with,
+
+$$sd = \sqrt{\frac{\Sigma{x^2}}{n-1}-\frac{({\Sigma{x}})^2}{(n-1)*n}}$$
+
+Let's modify our expression a little bit:
+
+
+```{r}
+sqrt(sum(iris_Petal.Length^2)/(length(iris_Petal.Length)-1)-(sum(iris_Petal.Length)^2/((length(iris_Petal.Length)-1)*length(iris_Petal.Length))))
+```
+
+
+
