@@ -1,15 +1,198 @@
 ---
-title: "R Notebook"
+title: "Exploratory visualization on Iris"
 output: html_notebook
 ---
 
-# Preview 
+# Preview of all data
 
-```{r,message=F}
+## Preview scatters 
+
+Unlike other languages,a tutorial of R would start by demonstrating how to make a rather sophisticated plot of the iris dataset instread of printing "Hello World!".
+
+
+Let's do it.
+
+```{r plot}
+plot(iris)
+plot(iris[,1:4])
+```
+
+The first plot made no sence of scattering the "Species" variable. In a non-jittered scatterplot, only numerical variable with separate locations are well-presented (they can lie sometimes!). Filter them out!
+
+For modernized graphic, not only the correctness but also effect of presentation, ergonomic aesthetical aspects, interactivity, performance... should be taken into account. You possibly won't get a good insight of data/ model/ relationship at once, but you can explore a bunch of recipes and customize for your own graphical discovery.
+
+Talk is easy. The plot above is still no good, different subspecies are mixed together. Thanks to one of the inventions from the Bell's Laboratory, we can use lattice library to quickly produce a number of plots in a better way.
+
+```{r}
+library(lattice)
+splom(iris,col = iris$Species)
 library(ggplot2)
 library(GGally)
-ggpairs(iris)
+GGally::ggpairs(iris,aes(fill = Species,color=Species,alpha=.5))
+```
+
+They are all maybe too complicated to look at for the first glance. I would recommend that you render them in a big screen and see some general patterns before starting to work on specific aspects.
+
+
+For a more sophisticated first glance, see below.
+
+### Preview Mapping?
+
+To see corresponding mappings of the data, we can use a parallel coordinate plot (unscaled), this is simmilar to something called Andrew's plot.
+
+But ir
+```{r,message=F}
+
+#ggpairs(iris)
+
+
 ggparcoord(iris)
 ```
+
+and you can add more aspects, but tuning these recepies gets harder and more counter-intuitive.
+
+
+```{r}
+ggparcoord(iris,groupColumn = 5,boxplot =T)
+```
+
+
+### Look up case 1: 1 var scatter plot
+I would suggest setosa has thinner and shorter Petals? Actually you can plot those 2 variables easily:
+
+either
+```{r}
+with(iris,{plot(Petal.Width~Petal.Length,col=factor(Species))})
+```
+
+or (with ggplot2),
+
+```{r qplots}
+ggplot2::qplot(data=iris,x = Petal.Length,y = Petal.Width,color= Species,geom ="point")
+```
+
+Too "packagy"? Well, congradulations! 2 of the most popular packages in R for visualization is masters.
+
+Well, does ggplot make any difference?
+
+Hum, yes and no... let's look at some compared examples:
+
+```{r ggplotMakeDifference}
+#first, define a graph object g, containing nothing but the data
+
+g = ggplot(data = iris,aes(x = Petal.Length,y = Petal.Width))
+
+#create a plot with colored scatters AND differen point types
+
+g1 = g + geom_point(aes(color = Species,shape= Species))
+g1
+
+#now add some rugs
+
+g1 = g1+ geom_rug(alpha = .5)# add transparency
+
+g1
+
+#now, group them
+
+g1 = g1+ facet_grid(.~Species)
+
+g1
+
+#now, try applying a linear model to all 
+g1+ geom_smooth(method = 'lm')
+
+
+#or maybe a lazy lowess curve for smoothing?
+
+g1+geom_smooth()
+
+```
+
+
+Pretty cool eh?
+
+
+
+## Preview distributions?
+
+What if I am a huge fan of subsetting the data and group them? well, of course I can subset the data, and divide them, and... wait a minute. There are lots of handy tools already defined!
+
+```{r latticePlots}
+
+
+lattice::bwplot(Petal.Width ~ Species,iris)
+
+```
+
+Equivalent to
+
+```{r}
+ggplot2::ggplot(data=iris,aes(y=Petal.Width,group = Species,color = Species))+geom_boxplot()+geom_rug(alpha=.5)
+```
+
+
+And multi-variable histogram, consider: which is better below?
+
+```{r mvhist}
+ggplot(data=iris,aes(x=Petal.Length,fill = Species)) + 
+  geom_histogram(position = 'dodge')
+
+ggplot(data=iris,aes(x=Petal.Length,fill = Species)) + 
+  geom_histogram(position = 'stack')
+ggplot(data=iris,aes(x=Petal.Length,fill = Species)) + 
+  geom_histogram(position = 'identity',alpha=.5)
+```
+
+Here's the trick, when data may overlay, make jitter or transparency. Well, they make plotting slower for big data, but they stop graphs from lying.
+
+For the same reason, try make a compared density plot.
+
+```{r}
+ggplot(data=iris,aes(x=Petal.Length,fill = Species)) + 
+  geom_density(alpha=.5)
+```
+
+
+## Preview correlations?
+
+What if I am a huge fan of combining linear models?
+An introduced way is to get the linear correlation coefficients (regardless what type).
+
+```{r corrr}
+cor(iris[1:4])
+```
+
+But it never makes sense. Can we use it symbolically?
+```{r symnum}
+symnum(cor(iris[,1:4]))
+```
+
+Yeah? Petal.Length and Petal.Width are good friends? Wait a minute, there are clever ways of doing it.
+
+```{r}
+corrplot::corrplot(cor(iris[,1:4]))
+```
+
+And what? There's a ggplot version?
+
+```{r ggcorrplot}
+library(ggcorrplot)
+library(RColorBrewer)
+
+ggcorrplot(cor(iris[1:4]),method='circle',color =c("blue","purple","red"))
+```
+
+## Preview higher dimension
+
+What most tutorials do not mention is the 3D perspective plotting option. Reasons, or in other words, excuses, are that they are "misleading" and "time-consuming".
+
+Making good 3D plot is hard, but worth-trying sometimes.
+
+# Rethinking: How should we plot?
+
+For years there are arguments on how plots should be made, there are people using rgl, lattice, ggplot, and lots and lots of alternatives. No graphic package is perfect for any situations at least so far.
+
+It seems to me, the pros and cons of these devices are:
 
 
