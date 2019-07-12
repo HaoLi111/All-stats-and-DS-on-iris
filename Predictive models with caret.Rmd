@@ -9,17 +9,39 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Why? A huge blackbox without understanding?
+
+It is generally not encouraged, huh?
+
+True, it is unsafe and unreasonable to use an unknown model to predict complexed thing,... but
+
+You can establish some understanding of complexity of the data, by first
+apply and auto-tune some powerful and complexed model for the predictions,
+and then use a relatively simple model which is explained.
+
+Compare the predictive model and the explainatory one...
+
+What does the comparision suggest?
+
+ - The limitation of the predictive model suggest how much randomness is still not well presented in the data. e.g. Is there more hidden layers (partials) yet to be considered?
+ 
+ - When you choose a simpler model that is easy to explain. The predicting power you lose is a measure of how much complexity is not considered in the explainatory model.
+
+And that could be important. Wait, I haven't shown how to automatically deploy and tune these big blackboxes yet!
+
+
 ## CARET package
 
 ```
 #install.packages("caret")
+#install.packages("visreg")
 ```
 
-##
+## Default model selection
 
 ```{r}
 library(caret)
-
+library(visreg)
 ```
 
 
@@ -32,6 +54,7 @@ model2 =train(Sepal.Length~.,data=iris)
 
 pred1 = predict(model1)
 plot(model1)
+
 #visreg::visreg(pred1)
 caret::confusionMatrix(iris$Species,pred1)
 #install.packages('broom')
@@ -46,6 +69,8 @@ pred2 = predict(model2)
 visreg::visreg(model2)
 ```
 
+## Lookup tunable parameters for the black boxes
+
 ```{r}
 modelLookup('C5.0')
 #modelLookup('tree')
@@ -56,7 +81,7 @@ modelLookup('nnet')
 ```
 
 
-tune a C5.0 tree
+## tune a C5.0 tree
 
 ```{r trainControl}
 ctrl = trainControl(method ='cv',number = 20,selectionFunction = 'oneSE')
@@ -74,7 +99,7 @@ ctrl_model
 ```
 
 
-tune a NN
+## tune a NN
 
 ```{r}
 modelLookup('nnet')
@@ -96,7 +121,7 @@ Perf= as.matrix(nnet_iris_tune$results)
 ```
 
 
-#bagging
+# Bagging
 
 ```{r}
 
@@ -124,7 +149,7 @@ svmbag = train(is_setosa~.,data = iris_1,method = "bag",
 ```
 
 
-#boosting
+# Boosting
 
 ##adaboost
 
