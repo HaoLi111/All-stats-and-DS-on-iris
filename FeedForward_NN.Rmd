@@ -1,0 +1,75 @@
+---
+title: "FeedForward NN"
+output: html_notebook
+---
+
+#1
+
+# Brief
+
+In this session I am going to introduce the usage of package 'neuralnet' and associated packages.
+
+Lot's of R packages are built and maintained by a group of users. Since mostly written in R, performance of these packages is sometimes inferior to their industrial alternatives. However, the advantage of using pure-r packages is the ease of use, consistency in computing (if you think of parallel computing implementations), and availability of source code. You can promote the development iof certain R packages by collaborating.
+
+Usually, packages in R focus on certain professional problem and are very specialized. You may get more implemented solutions in Python but the in-depth considerations for certain models are usually better developed in R. There are packages that go really deep into one certain model in some professional aspects--the prediction and representation of which is beneficial. If one want to know as much as a ML model knows, then better representations of such are needed.
+
+There is a misunderstanding that Neural-nets are suitable for all cases.
+
+ - There are different types of NNs and selecting and tuning them takes time
+ - Bagged models, boosted models can predict situations with equivalent or even higher complexity sometimes.
+ - Complexity of the models raises ambiguity.
+ 
+
+https://github.com/bips-hb/neuralnet
+
+Another package called 'nnet'.
+https://github.com/cran/nnet
+
+For plotting it is useful to call some model-specific visualizer
+https://github.com/fawda123/NeuralNetTools
+
+And, as always, visualization for regression models with visreg
+https://github.com/pbreheny/visreg
+
+
+
+Besides, you can also connect some very powerful platforms, e.g. tf, mxnet to R, but in the case of understanding modernized stats methods, they are not helpful.
+
+ 
+```{r loadPkg}
+library(neuralnet)
+
+
+```
+ 
+## Train workflow
+
+Let us first agree that a function that can train NN contains (roughly):
+
+ - A Data structure, maybe class,to store the model data
+ - A compute function, in this case feed forward, to compute outcome
+ - An optimizer (possibly with AD) to find best set of params
+ - A function to tune the optimizer
+ 
+ 
+```{r}
+Species_model = neuralnet::neuralnet(Species~., data=iris)
+```
+
+Plot structure of the model
+
+```{r}
+plot(Species_model)
+```
+
+Plot mappings of the model
+
+```{r}
+#install.packages("nnet")
+library(nnet)
+?nnet
+Species_model = nnet(Species ~ ., data = iris, subset = samp, size = 2, rang = 0.1,
+               decay = 5e-4, maxit = 200)
+
+```
+

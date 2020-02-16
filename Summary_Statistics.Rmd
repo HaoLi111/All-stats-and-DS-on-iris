@@ -1,0 +1,311 @@
+---
+title: "Summary Statistics"
+author: "Hao Li"
+output:
+  word_document: default
+  html_notebook: default
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+# Summary statistics
+
+# Header
+
+This file belongs to the collection of
+
+https://github.com/HaoLi111/All-stats-and-DS-on-iris
+
+which intends to give
+
+A collection of ALL POSSIBLE statistical and data science models on the iris data set in R.
+
+with MIT License
+
+https://github.com/HaoLi111/All-stats-and-DS-on-iris/blob/master/LICENSE
+
+## First Glance
+
+R has basic functions to calculate numerical aspects of data. Perhaps the very first thing to look at your data is with summary() and plot(). You wouldn't expect to have a decent view of data, but a very general one.
+
+You are expected to read the article Exploratory visualization before this part.
+
+
+```{r sum1}
+summary(iris)
+plot(iris,col= factor(iris$Species))
+```
+
+With summary(), you can access the min, max median, and other aspects of data. With plot(), you can have a general view of your data. 
+
+But keep in mind that the trend shown at the first glance can be misleading - both numerically and visually. There are lots of cases when things become counter-intuitive.
+
+## A better summary
+
+To crunch the iris dataset, simply printing one-line commands isn't enough. It is suggested that R is a programming language, or more specifically, a scripting language. Programmability means flexibility.
+
+### Structure of Data
+
+
+
+```{r classTypeof}
+class(iris)
+typeof(iris)
+```
+
+The 'Class' of the iris is "data.frame" and "type" is list. With most S3 methods the data can only be handled with the methods for "data.frame". 
+
+```{r classTypeof2}
+str(iris)
+```
+
+## Subsetting
+
+For example, if I am only interested in the variable "Petal.Length"
+
+```{r}
+(iris_Petal.Length = iris[,"Petal.Length"])
+```
+
+This is printed as a numeric vector. If I still want a data.frame (with 1 list). Do this(for convenience only printing the first 6 rows of it),
+
+```{r irisDropF}
+iris_Petal.Length_notDrop =iris[,"Petal.Length",drop=F]
+head(iris_Petal.Length)
+```
+
+
+
+## Calculate Summary Statistics Aspects
+
+You can run summary() on a single numeric vector the same way you do it on dataframes. 
+Also it is possible to get the index of the max and min values.
+Note that which.max() and which.min() only support 1D vector, so use drop=T.
+For Example,
+
+```{r irisMin}
+summary(iris_Petal.Length)
+mean(iris_Petal.Length)
+max(iris_Petal.Length);min(iris_Petal.Length)
+which.max(iris_Petal.Length);which.min(iris_Petal.Length)
+quantile(iris_Petal.Length,.25)
+quantile(iris_Petal.Length,.75)
+```
+
+Also the numeric functions are availiable. We can calculate sd(Standard Derivation by taking the square root of the derivation).
+
+$$sd = \sqrt{\frac{\Sigma{x^2}}{n}-(\frac{{\Sigma{x}}}{n})^2}$$
+
+```{r}
+length(iris_Petal.Length)
+var(iris_Petal.Length)
+sd(iris_Petal.Length)
+
+sqrt(sum(iris_Petal.Length^2)/length(iris_Petal.Length) - (sum(iris_Petal.Length/length(iris_Petal.Length)))^2)
+```
+
+As you can see the sd that is returned from the function sd()  differs from that calculated from the equation, why?
+
+Let's access the help file, and it says,
+
+"Like var this uses denominator n-1"
+
+
+
+This is an unbiased estimator of sd, with,
+
+$$sd = \sqrt{\frac{\Sigma{x^2}}{n-1}-\frac{({\Sigma{x}})^2}{(n-1)*n}}$$
+
+Let's modify our expression a little bit:
+
+
+```{r}
+sqrt(sum(iris_Petal.Length^2)/(length(iris_Petal.Length)-1)-(sum(iris_Petal.Length)^2/((length(iris_Petal.Length)-1)*length(iris_Petal.Length))))# actually, don't do this, use sd()
+```
+
+
+# Aggregating/ Facetting/ summarizing?
+
+Recall that we can make histogram with
+
+```{r histogram}
+hist(iris_Petal.Length)
+```
+
+At the first glance it has 2 peaks. Recall that we can facet the distribution with ggplot.
+
+```{r}
+library(ggplot2)
+ggplot(data=iris,aes(x=Petal.Length,fill = Species)) + 
+  geom_density(alpha=.5)
+```
+
+## A base solution : aggregate
+
+
+```{r aggregate}
+
+attach(iris)
+aggregate(Sepal.Length, by = list(Species=Species),
+          FUN = sd)
+aggregate(Sepal.Length,by =list(Species = Species),
+          FUN = pastecs::stat.desc)
+```
+
+For the same reason you can apply customized functions
+
+```{r skewness}
+Skewness =function(x){
+  m = mean(x)
+  n = length(x)
+  s = sd(x)
+  sum((x-m)^3/s^3)/n
+}
+aggregate(Sepal.Length,by =list(Species = Species),
+          FUN =Skewness  )
+```
+
+Since positive, all 3 species are with right skewed distribution of Sepal.Length.
+
+## An agreed way of summarizing?
+
+Problem is, everyone wants to rule the world. By “the world”, I mean their "Imagine Estacy", therefore, a number of different summarizing toolbox has been defined with different packages.
+
+
+Worse, they don't always work with aggregate(), nor with summarize in tidyverse.
+
+Doing such is easy.
+```{r}
+print(Hmisc::describe(iris[,1]))
+print(psych::describe(iris[,1]))
+pastecs::stat.desc(iris[,1],basic = T,
+                   desc = F,
+                   norm = F)
+pastecs::stat.desc(iris[,1],basic =F,
+                   desc = T,
+                   norm = F)
+pastecs::stat.desc(iris[,1],basic =F,
+                   desc = F,
+                   norm = T)
+```
+
+but to do aggregation for multiple outputs, you will inevitably end up using other wrappers to save time, (and sometimes by() breaks!)
+
+True, you can write some customized functions.
+
+```{r}
+ply_by = function(x,.f,param = 1,groups = ncol(x),as.list = FALSE,...){
+  Levels = levels(x[,groups])
+  re=list()
+  l =length(Levels)
+  for(i in 1:l){
+    print(Levels[i])
+    print(.f(x[x[,groups]==Levels[i],param],...))
+  }
+  #re
+}
+
+ply_by(iris,.f = summary)
+ply_by(iris,.f = Hmisc::describe)
+ply_by(iris,.f = psych::describe)
+ply_by(iris,pastecs::stat.desc,basic =F,
+                   desc = F,
+                   norm = T)
+```
+
+It is working, but is bumpy,because R package developments are very decentralized and lots of the algorithms has been written for some time with the old conventions.
+
+Sometimes it becomes hard to work with these old conventioned packages -they don't even work in a reproducible way. If this happens, maybe go to their source for help- you know how to build things with packages? alright, I know how packages are built lol.
+
+
+## Operators, functors and Data pipelines?
+
+The package dplyr in tidyverse offers a better way of facetting.
+
+We can use data pipeline to create something that is similar to the idea of "Pivot table" in Excel.
+
+```{r dplyrPivotTable}
+library(dplyr)
+iris %>% arrange(Species) %>% group_by(Species) %>%
+  summarize(Count = n(),Min = min(Petal.Length),LQ = quantile(Petal.Length,.25),Median = median(Petal.Length,.25),Mean = mean(Petal.Length),Skew = Skewness(Petal.Length),UQ = quantile(Petal.Length,.75),Max =max(Petal.Length))
+  
+  
+```
+
+which is very handy. The idea of pipeline makes it possible for us to compare not only data and aspects of which, but also certain model applied to which. I will save that in a future post.
+
+# Model a 1-var distribution
+
+We can test if a 1-var distribution follow certain assumptions or not, recall that the code below give the likelyhood of a set of observations to follow the normal distribution.
+
+```{r}
+ply_by(iris,pastecs::stat.desc,basic =F,
+                   desc = F,
+                   norm = T)
+
+```
+
+As for the graph (we will use setosa as an example)
+
+```{r}
+#hist(iris_setosa[,1],freq= F)
+iris_setosa = subset(iris,Species=="setosa")
+plot(density(iris_setosa[,1]),col = 'red',lty=2,main ="Distribution of Petal Length of setosa")
+
+#hence write a function that add normal density line to certain dataset
+
+lines_dnorm = function(x,n=20){
+  xbase = seq(from=min(x),to=max(x),length.out=n)
+  lines(xbase,dnorm(xbase,mean = mean(x),sd =sd(x)),color='blue',lty=2)
+}
+
+lines_dnorm(iris_setosa[,1])
+```
+
+Add some vertical lines to help us read the plot.
+
+```{r abline}
+# line up
+# mid point
+
+abline_summary = function(x,type = 'v'){
+  L = list(list(mean(x),col = "green"),
+           list(median(x),col = "blue"),
+           list(quantile(x,.25),col = "brown"),
+           list(quantile(x,.75),col = "brown"),
+           list(quantile(x,.05),col = "purple"),
+           list(quantile(x,.95),col = "purple"))
+  for(i in 1:length(L)){
+    x = L[[i]]
+    names(x)[1] = type
+    do.call(abline,x)
+  }
+}
+```
+
+Wrap the lines into a function, and test it -- as always, it is important to know how to adjust the plots.
+
+```{r richVersion}
+plot(density(iris_setosa[,1]),col = 'red',lty=2,main ="Distribution of Petal Length of setosa")
+
+lines_dnorm(iris_setosa[,1])
+abline_summary(iris_setosa[,1])
+#add grid
+grid()
+```
+
+
+## QQ plot
+
+A qq plot is another way of visualizing how well the normal distribution applies. To use it, call qqnorm()
+
+```{r qqNorm}
+qqnorm(iris_setosa[,1])
+```
+
+This is simmilar to the cumulative density funcition but compared a "theoretical scale" with the origional one.
+
+
+
+

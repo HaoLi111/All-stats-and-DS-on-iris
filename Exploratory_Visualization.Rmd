@@ -1,6 +1,8 @@
 ---
 title: "Exploratory visualization on Iris"
-output: html_notebook
+output:
+  word_document: default
+  html_notebook: default
 ---
 
 # Preview of all data
@@ -44,8 +46,6 @@ But ir
 ```{r,message=F}
 
 #ggpairs(iris)
-
-
 ggparcoord(iris)
 ```
 
@@ -53,8 +53,10 @@ and you can add more aspects, but tuning these recepies gets harder and more cou
 
 
 ```{r}
-ggparcoord(iris,groupColumn = 5,boxplot =T)
+ggparcoord(iris,groupColumn = 5)
 ```
+
+And however you tune it, the plot is only suitable for previewing. 
 
 
 ### Look up case 1: 1 var scatter plot
@@ -71,7 +73,7 @@ or (with ggplot2),
 ggplot2::qplot(data=iris,x = Petal.Length,y = Petal.Width,color= Species,geom ="point")
 ```
 
-Too "packagy"? Well, congradulations! 2 of the most popular packages in R for visualization is masters.
+Too "packagy"? Well, congratulations! 2 of the most popular packages in R for visualization is masters.
 
 Well, does ggplot make any difference?
 
@@ -179,9 +181,10 @@ And what? There's a ggplot version?
 ```{r ggcorrplot}
 library(ggcorrplot)
 library(RColorBrewer)
-
 ggcorrplot(cor(iris[1:4]),method='circle',color =c("blue","purple","red"))
 ```
+
+
 
 ## Preview higher dimension
 
@@ -189,6 +192,38 @@ What most tutorials do not mention is the 3D perspective plotting option. Reason
 
 Making good 3D plot is hard, but worth-trying sometimes.
 
+The use of a package called plot3D will be demonstrated. It is one of the packages associated with r - GL ecosystem. The package plot3Drgl is a rgl version of plot3d package.
+
+```{r}
+#install.packages("plot3D")
+library(plot3D)
+
+
+plot3D::scatter3D(iris[,1],iris[,2],iris[,3],
+                  col= as.numeric(iris[,"Species"]),
+                  xlab =colnames(iris)[1],
+                  ylab =colnames(iris)[2],
+                  zlab = colnames(iris)[3])
+
+```
+
+If, from one view, the plots seem to lay densely around a line, then the distribution may be any subsets of a plane. Change the angle phi and theta.
+```{r}
+plot3D::scatter3D(iris[,1],iris[,2],iris[,3],
+                  col= as.numeric(iris[,"Species"]),
+                  xlab =colnames(iris)[1],
+                  ylab =colnames(iris)[2],
+                  zlab = colnames(iris)[3],
+                  phi = 60,
+                  theta = 45)
+plot3D::scatter3D(iris[,1],iris[,2],iris[,3],
+                  col= as.numeric(iris[,"Species"]),
+                  xlab =colnames(iris)[1],
+                  ylab =colnames(iris)[2],
+                  zlab = colnames(iris)[3],
+                  phi = 10,
+                  theta = 65)
+```
 # Rethinking: How should we plot?
 
 For years there are arguments on how plots should be made, there are people using rgl, lattice, ggplot, and lots and lots of alternatives. No graphic package is perfect for any situations at least so far.
